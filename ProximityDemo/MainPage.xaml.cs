@@ -13,7 +13,8 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=391641
+//Add Proximity API
+using Windows.Networking.Proximity;
 
 namespace ProximityDemo
 {
@@ -31,6 +32,8 @@ namespace ProximityDemo
 
         /// <summary>
         /// Invoked when this page is about to be displayed in a Frame.
+        /// 
+        /// Add TriggeredConnectionStateChanged and ConnectionRequested
         /// </summary>
         /// <param name="e">Event data that describes how this page was reached.
         /// This parameter is typically used to configure the page.</param>
@@ -44,23 +47,23 @@ namespace ProximityDemo
             // If you are using the NavigationHelper provided by some templates,
             // this event is handled for you.
 
-            DisplayNameTextBox.Text = Windows.Networking.Proximity.PeerFinder.DisplayName;
+            DisplayNameTextBox.Text = PeerFinder.DisplayName;
 
-            if ((Windows.Networking.Proximity.PeerFinder.SupportedDiscoveryTypes &
-                 Windows.Networking.Proximity.PeerDiscoveryTypes.Triggered) ==
-                 Windows.Networking.Proximity.PeerDiscoveryTypes.Triggered)
+            if ((PeerFinder.SupportedDiscoveryTypes &
+                 PeerDiscoveryTypes.Triggered) ==
+                 PeerDiscoveryTypes.Triggered)
             {
-                Windows.Networking.Proximity.PeerFinder.TriggeredConnectionStateChanged +=
+                PeerFinder.TriggeredConnectionStateChanged +=
                     TriggeredConnectionStateChanged;
             }
-            Windows.Networking.Proximity.PeerFinder.ConnectionRequested += ConnectionRequested;
+            PeerFinder.ConnectionRequested += ConnectionRequested;
         }
 
         // Handle external connection requests.
-        Windows.Networking.Proximity.PeerInformation requestingPeer;
+        PeerInformation requestingPeer;
 
         private void ConnectionRequested(object sender,
-            Windows.Networking.Proximity.ConnectionRequestedEventArgs e)
+            ConnectionRequestedEventArgs e)
         {
             requestingPeer = e.PeerInformation;
             WriteMessageText("Connection requested by " + requestingPeer.DisplayName + ". " +
@@ -208,13 +211,13 @@ namespace ProximityDemo
 
         private void TriggeredConnectionStateChanged(
             object sender,
-            Windows.Networking.Proximity.TriggeredConnectionStateChangedEventArgs e)
+            TriggeredConnectionStateChangedEventArgs e)
         {
-            if (e.State == Windows.Networking.Proximity.TriggeredConnectState.PeerFound)
+            if (e.State == TriggeredConnectState.PeerFound)
             {
                 WriteMessageText("Peer found. You may now pull your devices out of proximity.");
             }
-            if (e.State == Windows.Networking.Proximity.TriggeredConnectState.Completed)
+            if (e.State == TriggeredConnectState.Completed)
             {
                 WriteMessageText("Connected. You may now send a message.");
                 SendMessage(e.Socket);
@@ -228,10 +231,10 @@ namespace ProximityDemo
             if (_started)
             {
                 // Detach the callback handler (there can only be one PeerConnectProgress handler).
-                Windows.Networking.Proximity.PeerFinder.TriggeredConnectionStateChanged -= TriggeredConnectionStateChanged;
+                PeerFinder.TriggeredConnectionStateChanged -= TriggeredConnectionStateChanged;
                 // Detach the incoming connection request event handler.
-                Windows.Networking.Proximity.PeerFinder.ConnectionRequested -= ConnectionRequested;
-                Windows.Networking.Proximity.PeerFinder.Stop();
+                PeerFinder.ConnectionRequested -= ConnectionRequested;
+                PeerFinder.Stop();
                 CloseSocket();
                 _started = false;
             }
@@ -249,11 +252,11 @@ namespace ProximityDemo
                 return;
             }
 
-            Windows.Networking.Proximity.PeerFinder.DisplayName = DisplayNameTextBox.Text;
+            PeerFinder.DisplayName = DisplayNameTextBox.Text;
 
-            if ((Windows.Networking.Proximity.PeerFinder.SupportedDiscoveryTypes &
-                 Windows.Networking.Proximity.PeerDiscoveryTypes.Triggered) ==
-                 Windows.Networking.Proximity.PeerDiscoveryTypes.Triggered)
+            if ((PeerFinder.SupportedDiscoveryTypes &
+                 PeerDiscoveryTypes.Triggered) ==
+                 PeerDiscoveryTypes.Triggered)
             {
 
                 WriteMessageText("You can tap to connect a peer device that is " +
@@ -264,14 +267,14 @@ namespace ProximityDemo
                 WriteMessageText("Tap to connect is not supported.");
             }
 
-            if ((Windows.Networking.Proximity.PeerFinder.SupportedDiscoveryTypes &
-                 Windows.Networking.Proximity.PeerDiscoveryTypes.Browse) !=
-                 Windows.Networking.Proximity.PeerDiscoveryTypes.Browse)
+            if ((PeerFinder.SupportedDiscoveryTypes &
+                 PeerDiscoveryTypes.Browse) !=
+                 PeerDiscoveryTypes.Browse)
             {
                 WriteMessageText("Peer discovery using Wi-Fi Direct is not supported.");
             }
 
-            Windows.Networking.Proximity.PeerFinder.Start();
+            PeerFinder.Start();
             _started = true;
         }
 
@@ -279,9 +282,9 @@ namespace ProximityDemo
         // Click event handler for "Browse" button.
         async private void FindButtonPressed(object sender, RoutedEventArgs e)
         {
-            if ((Windows.Networking.Proximity.PeerFinder.SupportedDiscoveryTypes &
-                 Windows.Networking.Proximity.PeerDiscoveryTypes.Browse) !=
-                 Windows.Networking.Proximity.PeerDiscoveryTypes.Browse)
+            if ((PeerFinder.SupportedDiscoveryTypes &
+                 PeerDiscoveryTypes.Browse) !=
+                 PeerDiscoveryTypes.Browse)
             {
                 WriteMessageText("Peer discovery using Wi-Fi is not supported.");
                 return;
@@ -289,7 +292,7 @@ namespace ProximityDemo
 
             try
             {
-                var peerInfoCollection = await Windows.Networking.Proximity.PeerFinder.FindAllPeersAsync();
+                var peerInfoCollection = await PeerFinder.FindAllPeersAsync();
                 if (peerInfoCollection.Count > 0)
                 {
                     // Connect to the first peer
@@ -315,13 +318,13 @@ namespace ProximityDemo
         }
 
 
-        async private void ConnectToPeer(Windows.Networking.Proximity.PeerInformation peerInfo)
+        async private void ConnectToPeer(PeerInformation peerInfo)
         {
             WriteMessageText("Peer found. Connecting to " + peerInfo.DisplayName);
             try
             {
                 Windows.Networking.Sockets.StreamSocket socket =
-                    await Windows.Networking.Proximity.PeerFinder.ConnectAsync(peerInfo);
+                    await PeerFinder.ConnectAsync(peerInfo);
 
                 WriteMessageText("Connection successful. You may now send messages.");
                 SendMessage(socket);
@@ -338,7 +341,7 @@ namespace ProximityDemo
         private void StopButtonPressed(object sender, RoutedEventArgs e)
         {
             _started = false;
-            Windows.Networking.Proximity.PeerFinder.Stop();
+            PeerFinder.Stop();
             if (proximitySocket != null) { CloseSocket(); }
         }
 
