@@ -13,21 +13,40 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-//Add Proximity API
+//Add Proxm
 using Windows.Networking.Proximity;
 
 namespace ProximityDemo
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// A page that showcases use of the Proximity API
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        // Begin message sending example
+        // Proximity Device
+        private Windows.Networking.Proximity.ProximityDevice _proximityDevice;
+        // Published Message ID
+        private long _publishedMessageID = -1;
+        // Subscribed Message ID
+        private long _subscribedMessageID = -1;
+        // End message sending example
+
         public MainPage()
         {
             this.InitializeComponent();
 
             this.NavigationCacheMode = NavigationCacheMode.Required;
+
+            // Begin message sending example
+            //For sending/receive messages
+            _proximityDevice = ProximityDevice.GetDefault();
+            if (_proximityDevice == null)
+            {
+                WriteMessageText("Failed to initialized proximity device.\n" +
+                                 "Your device may not have proximity hardware.");
+            }
+            // End message sending example
         }
 
         /// <summary>
@@ -49,14 +68,16 @@ namespace ProximityDemo
 
             DisplayNameTextBox.Text = PeerFinder.DisplayName;
 
-            if ((PeerFinder.SupportedDiscoveryTypes &
-                 PeerDiscoveryTypes.Triggered) ==
-                 PeerDiscoveryTypes.Triggered)
-            {
-                PeerFinder.TriggeredConnectionStateChanged +=
-                    TriggeredConnectionStateChanged;
-            }
-            PeerFinder.ConnectionRequested += ConnectionRequested;
+            // Begin PeerFinder socket example
+            //if ((PeerFinder.SupportedDiscoveryTypes &
+            //     PeerDiscoveryTypes.Triggered) ==
+            //     PeerDiscoveryTypes.Triggered)
+            //{
+            //    PeerFinder.TriggeredConnectionStateChanged +=
+            //        TriggeredConnectionStateChanged;
+            //}
+            //PeerFinder.ConnectionRequested += ConnectionRequested;
+            // End PeerFinder socket example
         }
 
         // Handle external connection requests.
@@ -175,14 +196,26 @@ namespace ProximityDemo
 
         private void SendButtonPressed(object sender, RoutedEventArgs e)
         {
-            if (proximitySocket != null)
-            {
-                SendMessageText();
-            }
-            else
-            {
-                WriteMessageText("You must enter proximity to send a message.");
-            }
+            // Begin message sending example
+            //Stop Publishing the current message.
+            if (_publishedMessageID != -1)
+                _proximityDevice.StopPublishingMessage(_publishedMessageID);
+
+            _publishedMessageID = _proximityDevice.PublishMessage("Windows.ExampleMessage", MessageTextBox.Text);
+            WriteMessageText("Publishing message! Tap devices to send.");
+            // End message sending example
+
+
+            // Begin PeerFinder socket example
+            //if (proximitySocket != null)
+            //{
+            //    SendMessageText();
+            //}
+            //else
+            //{
+            //    WriteMessageText("You must enter proximity to send a message.");
+            //}
+            // End PeerFinder socket example
         }
 
         // Send a message to the socket.
@@ -246,45 +279,63 @@ namespace ProximityDemo
         // Display message if Discovery or Tap is not supported.
         private void AdvertiseButtonPressed(object sender, RoutedEventArgs e)
         {
-            if (_started)
+            // Begin message sending example
+            if (_subscribedMessageID == -1)
             {
-                WriteMessageText("You are already advertising for a connection.");
-                return;
-            }
-
-            PeerFinder.DisplayName = DisplayNameTextBox.Text;
-
-            if ((PeerFinder.SupportedDiscoveryTypes &
-                 PeerDiscoveryTypes.Triggered) ==
-                 PeerDiscoveryTypes.Triggered)
-            {
-
-                WriteMessageText("You can tap to connect a peer device that is " +
-                                 "also advertising for a connection.");
+                _subscribedMessageID = _proximityDevice.SubscribeForMessage("Windows.ExampleMessage", messageReceived);
+                WriteMessageText("Now subscribing! Tap devices to receive.");
             }
             else
             {
-                WriteMessageText("Tap to connect is not supported.");
+                WriteMessageText("Already subscribing!\n");
             }
+            // End message sending example
 
-            if ((PeerFinder.SupportedDiscoveryTypes &
-                 PeerDiscoveryTypes.Browse) !=
-                 PeerDiscoveryTypes.Browse)
-            {
-                WriteMessageText("Peer discovery using Wi-Fi Direct is not supported.");
-            }
+            // Begin PeerFinder socket example
+            //if (_started)
+            //{
+            //    WriteMessageText("You are already advertising for a connection.");
+            //    return;
+            //}
 
-            PeerFinder.Start();
-            _started = true;
+            //PeerFinder.DisplayName = DisplayNameTextBox.Text;
+
+            //if ((PeerFinder.SupportedDiscoveryTypes &
+            //     PeerDiscoveryTypes.Triggered) ==
+            //     PeerDiscoveryTypes.Triggered)
+            //{
+
+            //    WriteMessageText("You can tap to connect a peer device that is " +
+            //                     "also advertising for a connection.");
+            //}
+            //else
+            //{
+            //    WriteMessageText("Tap to connect is not supported.");
+            //}
+
+            //if ((PeerFinder.SupportedDiscoveryTypes &
+            //     PeerDiscoveryTypes.Browse) !=
+            //     PeerDiscoveryTypes.Browse)
+            //{
+            //    WriteMessageText("Peer discovery using Wi-Fi Direct is not supported.");
+            //}
+
+            //PeerFinder.Start();
+            //_started = true;
+            // End PeerFinder socket example
         }
 
+        // Used for message sending example
+        private void messageReceived(Windows.Networking.Proximity.ProximityDevice device,
+                                     Windows.Networking.Proximity.ProximityMessage message)
+        {
+            WriteMessageText("Message receieved: " + message.DataAsString + "\n");
+        }
 
         // Click event handler for "Browse" button.
         async private void FindButtonPressed(object sender, RoutedEventArgs e)
         {
-            if ((PeerFinder.SupportedDiscoveryTypes &
-                 PeerDiscoveryTypes.Browse) !=
-                 PeerDiscoveryTypes.Browse)
+            if ((PeerFinder.SupportedDiscoveryTypes & PeerDiscoveryTypes.Browse) != PeerDiscoveryTypes.Browse)
             {
                 WriteMessageText("Peer discovery using Wi-Fi is not supported.");
                 return;
@@ -340,9 +391,22 @@ namespace ProximityDemo
         // Click event handler for "Stop" button.
         private void StopButtonPressed(object sender, RoutedEventArgs e)
         {
-            _started = false;
-            PeerFinder.Stop();
-            if (proximitySocket != null) { CloseSocket(); }
+
+            // Begin message sending example
+            _proximityDevice.StopPublishingMessage(_publishedMessageID);
+            _publishedMessageID = -1;
+            _proximityDevice.StopSubscribingForMessage(_subscribedMessageID);
+            _subscribedMessageID = -1;
+            WriteMessageText("Stopped subscribing and publishing");
+            // End message sending example
+
+
+            // Begin PeerFinder socket example
+            //_started = false;
+            //PeerFinder.Stop();
+            //if (proximitySocket != null) { CloseSocket(); }
+            //WriteMessageText("Stopped PeerFinder and closed socket");
+            // End PeerFinder socket example
         }
 
 
