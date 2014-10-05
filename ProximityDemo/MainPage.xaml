@@ -8,36 +8,57 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid Margin="10,0,10,0">
+    <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Vertical" Grid.Row="0">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBox x:Name="DisplayNameTextBox" Width="256"/>
-                <Button x:Name="AdvertiseButton" Content="Advertise"
-                    Click="AdvertiseButtonPressed" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBox x:Name="MessageTextBox" Width="256"/>
-                <Button x:Name="SendButton" Content="Send"
-                    Click="SendButtonPressed" />
-            </StackPanel>
-            <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button x:Name="Find" Content="Find" Margin="5,0,5,0"
-            		    Click="FindButtonPressed" />
-                    <Button x:Name="StopButton" Content="Stop" Margin="5,0,5,0"
-            			Click="StopButtonPressed" />
-                    <Button x:Name="AcceptButton" Content="Accept" Margin="5,0,5,0"
-            			Click="AcceptButtonPressed" />
+        <Pivot Title="Proximity API Demos" Grid.Row="0" SelectionChanged="PivotChanged">
+            <PivotItem Header="PeerDevice">
+                <StackPanel Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBox x:Name="TapMessageTextBox" Text="Hello World!" Width="256"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button x:Name="PublishButton" Content="Publish" Margin="5,0,5,0"
+                                    Click="PublishButtonPressed" />
+                        <Button x:Name="StopPublishingButton" Content="Stop Publishing" Margin="5,0,5,0"
+            			            Click="StopPublishingButtonPressed" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button x:Name="SubscribeButton" Content="Subscribe" Margin="5,0,5,0"
+            		                Click="SubscribeButtonPressed" />
+                        <Button x:Name="StopSubscribingButton" Content="Stop Subscribing" Margin="5,0,5,0"
+            			            Click="StopSubscribingButtonPressed" />
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
-        </StackPanel>
-
+            </PivotItem>
+            <PivotItem Header="PeerFinder">
+                <StackPanel Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBox x:Name="DisplayNameTextBox" Width="225"/>
+                        <Button x:Name="AdvertiseButton" Content="Advertise" Margin="10,0,0,0"
+                                Click="AdvertiseButtonPressed" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBox x:Name="MessageTextBox" Text="Hello World!" Width="225"/>
+                        <Button x:Name="SendButton" Content="Send" Margin="10,0,0,0"
+                                Click="SendButtonPressed" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button x:Name="Find" Content="Find" Margin="5,0,5,0"
+            		                Click="FindButtonPressed" />
+                        <Button x:Name="StopButton" Content="Stop" Margin="5,0,5,0"
+            			            Click="StopButtonPressed" />
+                        <Button x:Name="AcceptButton" Content="Accept" Margin="5,0,5,0"
+            			            Click="AcceptButtonPressed" />
+                    </StackPanel>
+                </StackPanel>
+            </PivotItem>
+        </Pivot>
         <ScrollViewer Grid.Row="1">
-            <TextBlock x:Name="MessageBlock" TextWrapping="WrapWholeWords" Text="" VerticalAlignment="Top" />
+            <TextBlock x:Name="MessageBlock" FontSize="18" TextWrapping="WrapWholeWords" Text="Welcome to Proximity API Demos!" VerticalAlignment="Top" Margin="10,0,10,0" />
         </ScrollViewer>
     </Grid>
+
 </Page>
