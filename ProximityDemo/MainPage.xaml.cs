@@ -13,7 +13,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-//Add Proxm
+//Add Proxmity API
 using Windows.Networking.Proximity;
 
 namespace ProximityDemo
@@ -53,7 +53,7 @@ namespace ProximityDemo
         private void messageReceived(Windows.Networking.Proximity.ProximityDevice device,
                                      Windows.Networking.Proximity.ProximityMessage message)
         {
-            WriteMessageText("Message receieved: " + message.DataAsString + "\n");
+            WriteMessageText("Message receieved: " + message.DataAsString);
         }
 
         private void SubscribeButtonPressed(object sender, RoutedEventArgs e)
@@ -66,7 +66,7 @@ namespace ProximityDemo
             }
             else
             {
-                WriteMessageText("Already subscribing!\n");
+                WriteMessageText("Already subscribing!");
             }
         }
 
@@ -84,7 +84,7 @@ namespace ProximityDemo
             if (_publishedMessageID != -1)
                 _proximityDevice.StopPublishingMessage(_publishedMessageID);
 
-            string msg = "String here";//MessageTextBox.Text;
+            string msg = TapMessageTextBox.Text;
             if (msg.Length > 0)
             {
                 _publishedMessageID = _proximityDevice.PublishMessage("Windows.ExampleMessage", msg);
@@ -291,7 +291,7 @@ namespace ProximityDemo
         // Send a message to the socket.
         private async void SendMessageText()
         {
-            string msg = "String here";//MessageTextBox.Text;
+            string msg = MessageTextBox.Text;
 
             if (msg.Length > 0)
             {
@@ -380,6 +380,7 @@ namespace ProximityDemo
 
             try
             {
+                WriteMessageText("Attempting to find connection.");
                 var peerInfoCollection = await PeerFinder.FindAllPeersAsync();
                 if (peerInfoCollection.Count > 0)
                 {
