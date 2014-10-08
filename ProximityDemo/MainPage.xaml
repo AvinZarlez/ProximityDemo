@@ -59,8 +59,7 @@
         </Pivot>
         <ScrollViewer Grid.Row="1">
             <TextBlock x:Name="MessageBlock" FontSize="18" TextWrapping="WrapWholeWords"
-                       Text="Welcome to Proximity API Demos!
-                       Swipe to switch between examples."
+                       Text="Welcome to Proximity API Demos!&#x0a;Swipe to switch between examples."
                        VerticalAlignment="Top" Margin="10,0,10,0" />
         </ScrollViewer>
     </Grid>
