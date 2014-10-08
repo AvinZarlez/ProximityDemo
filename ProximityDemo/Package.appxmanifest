@@ -4,7 +4,7 @@
   <mp:PhoneIdentity PhoneProductId="cedc0401-7847-4d5f-beed-55f5b76463ec" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>ProximityDemo</DisplayName>
-    <PublisherDisplayName>tomarks</PublisherDisplayName>
+    <PublisherDisplayName>Tobiah</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
   <Prerequisites>
@@ -16,10 +16,13 @@
   </Resources>
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="ProximityDemo.App">
-      <m3:VisualElements DisplayName="ProximityDemo" Square150x150Logo="Assets\Logo.png" Square44x44Logo="Assets\SmallLogo.png" Description="ProximityDemo" ForegroundText="light" BackgroundColor="transparent">
+      <m3:VisualElements DisplayName="ProximityDemo" Square150x150Logo="Assets\Logo.png" Square44x44Logo="Assets\SmallLogo.png" Description="A demo of the Proximity API" ForegroundText="light" BackgroundColor="transparent">
         <m3:DefaultTile Wide310x150Logo="Assets\WideLogo.png" Square71x71Logo="Assets\Square71x71Logo.png">
         </m3:DefaultTile>
         <m3:SplashScreen Image="Assets\SplashScreen.png" />
+        <m3:InitialRotationPreference>
+          <m3:Rotation Preference="portrait" />
+        </m3:InitialRotationPreference>
       </m3:VisualElements>
     </Application>
   </Applications>
