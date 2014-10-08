@@ -43,6 +43,8 @@ namespace ProximityDemo
 
             this.NavigationCacheMode = NavigationCacheMode.Required;
 
+            Application.Current.Suspending += new SuspendingEventHandler(OnSuspending);
+ 
             #region ProximityDevice example initialization
             //For sending and receiving messages
             _proximityDevice = ProximityDevice.GetDefault();
@@ -118,9 +120,20 @@ namespace ProximityDemo
 
         /// <summary>
         /// Invoked when leaving this page. Clean up our variables
+        /// NOTE: If MainPage is only page, this is not invoked!
         /// </summary>
         protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
         {
+            Dispose();
+        }
+
+        /// <summary>
+        /// Invoked when app suspends. Clean up our variables
+        /// </summary>
+        private async void OnSuspending(Object sender, Windows.ApplicationModel.SuspendingEventArgs e)
+        {
+            WriteMessageText("App is suspending, disposing");
+
             Dispose();
         }
 
@@ -129,6 +142,10 @@ namespace ProximityDemo
         /// </summary>
         public void Dispose()
         {
+
+            PeerFinder.Stop();
+            _advertising = false;
+
             CloseSocket(); //Cleans up proximitySocket and dataWriter
 
             if (_proximityDevice != null)
