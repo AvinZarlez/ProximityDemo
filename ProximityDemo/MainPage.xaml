@@ -8,7 +8,8 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid >
+    <!-- Top part of grid is pivot view of controls, bottom is output text -->
+    <Grid>  
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -57,7 +58,10 @@
             </PivotItem>
         </Pivot>
         <ScrollViewer Grid.Row="1">
-            <TextBlock x:Name="MessageBlock" FontSize="18" TextWrapping="WrapWholeWords" Text="Welcome to Proximity API Demos!" VerticalAlignment="Top" Margin="10,0,10,0" />
+            <TextBlock x:Name="MessageBlock" FontSize="18" TextWrapping="WrapWholeWords"
+                       Text="Welcome to Proximity API Demos!
+                       Swipe to switch between examples."
+                       VerticalAlignment="Top" Margin="10,0,10,0" />
         </ScrollViewer>
     </Grid>
 

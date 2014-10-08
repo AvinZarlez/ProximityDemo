@@ -13,7 +13,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-//Add Proxmity API
+// Add Proxmity API on top of defaults
 using Windows.Networking.Proximity;
 
 namespace ProximityDemo
@@ -24,6 +24,15 @@ namespace ProximityDemo
     public sealed partial class MainPage : Page
     {
         #region General elements
+
+        #region General variables
+
+        // Last pivot index
+        private int last_pivot_index = -1;
+        // Dispatcher for messages we display to the screen
+        private Windows.UI.Core.CoreDispatcher messageDispatcher = Window.Current.CoreWindow.Dispatcher;
+
+        #endregion //Variables
 
         /// <summary>
         /// Page constructor
@@ -45,14 +54,32 @@ namespace ProximityDemo
             #endregion
         }
 
-        private int pivot_index = -1; //Last pivot index
+        /// <summary>
+        /// Writes a message to MessageBlock on the UI thread.
+        /// </summary>
+        /// <param name="message">The message to be added. Automatically includes a new line.</param>
+        /// <param name="overwrite">Should this message clear all the other messages from the screen?</param>
+        async private void WriteMessageText(string message, bool overwrite = false)
+        {
+            await messageDispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+                () =>
+                {
+                    message = DateTime.Now.ToString("[HH:mm:ss] ") + message + "\n";
+
+                    if (overwrite)
+                        MessageBlock.Text = message;
+                    else
+                        MessageBlock.Text = message + MessageBlock.Text;
+                });
+        }
+
         /// <summary>
         /// Invoked when Pivot element is changed/swiped.
         /// Sets up the next example, cleans up the last example.
         /// </summary>
         private void PivotChanged(object sender, SelectionChangedEventArgs e)
         {
-            switch (pivot_index)
+            switch (last_pivot_index)
             {
                 case 0: //Leaving Proximity Device demo
                     StopSubscribingButtonPressed(null, null);
@@ -73,17 +100,15 @@ namespace ProximityDemo
                     break;
             }
 
-            pivot_index = (((Pivot)sender).SelectedIndex);
+            last_pivot_index = (((Pivot)sender).SelectedIndex);
 
             #region PeerFinder socket example initialization/deconstructor
-            if (pivot_index == 1)
+            //If the current pivot is on PeerFinder, add handler.
+            if (last_pivot_index == 1)
             {
-                if ((PeerFinder.SupportedDiscoveryTypes &
-                        PeerDiscoveryTypes.Triggered) ==
-                        PeerDiscoveryTypes.Triggered)
+                if ((PeerFinder.SupportedDiscoveryTypes & PeerDiscoveryTypes.Triggered) == PeerDiscoveryTypes.Triggered)
                 {
-                    PeerFinder.TriggeredConnectionStateChanged +=
-                        TriggeredConnectionStateChanged;
+                    PeerFinder.TriggeredConnectionStateChanged += TriggeredConnectionStateChanged;
                 }
                 PeerFinder.ConnectionRequested += ConnectionRequested;
                 WriteMessageText("Starting PeerFinder");
@@ -91,26 +116,12 @@ namespace ProximityDemo
             #endregion
         }
 
-        // Write a message to MessageBlock on the UI thread.
-        private Windows.UI.Core.CoreDispatcher messageDispatcher = Window.Current.CoreWindow.Dispatcher;
-
         /// <summary>
-        /// Writes a message to the screen
+        /// Invoked when leaving this page. Clean up our variables
         /// </summary>
-        /// <param name="message">The message to be added. Automatically includes a new line.</param>
-        /// <param name="overwrite">Should this message clear all the other messages from the screen?</param>
-        async private void WriteMessageText(string message, bool overwrite = false)
+        protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
         {
-            await messageDispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
-                () =>
-                {
-                    message = DateTime.Now.ToString("[HH:mm:ss] ") + message + "\n";
-
-                    if (overwrite)
-                        MessageBlock.Text = message;
-                    else
-                        MessageBlock.Text = message + MessageBlock.Text;
-                });
+            Dispose();
         }
 
         /// <summary>
@@ -119,10 +130,27 @@ namespace ProximityDemo
         public void Dispose()
         {
             CloseSocket(); //Cleans up proximitySocket and dataWriter
+
+            if (_proximityDevice != null)
+            {
+                if (_subscribedMessageID == -1) //Stop Subscribing
+                {
+                    _proximityDevice.StopSubscribingForMessage(_subscribedMessageID);
+                    _subscribedMessageID = -1;
+                }
+                if (_publishedMessageID != -1) //Stop publishing
+                {
+                    _proximityDevice.StopPublishingMessage(_publishedMessageID);
+                    _publishedMessageID = -1;
+                }
+            }
         }
+
         #endregion //General elements
 
         #region ProximityDevice example
+
+        #region ProximityDevice variables
 
         // Proximity Device
         private ProximityDevice _proximityDevice;
@@ -130,6 +158,10 @@ namespace ProximityDemo
         private long _publishedMessageID = -1;
         // Subscribed Message ID
         private long _subscribedMessageID = -1;
+
+        #endregion //Variables
+
+        #region ProximityDevice functions
 
         /// <summary>
         /// Invoked when a message is received
@@ -140,6 +172,8 @@ namespace ProximityDemo
         {
             WriteMessageText("Message receieved: " + message.DataAsString);
         }
+
+        #endregion //ProximityDevice functions
 
         #region ProximityDevice example buttons
         /// <summary>
@@ -207,9 +241,24 @@ namespace ProximityDemo
             }
         }
         #endregion //ProximityDevice example buttons
+
         #endregion //ProximityDevice example
 
         #region ProximityFinder example
+
+        #region ProximityFinder variables
+
+        // Handle external connection requests.
+        PeerInformation requestingPeer;
+        // Current peer socket and datawriter
+        Windows.Networking.Sockets.StreamSocket proximitySocket;
+        Windows.Storage.Streams.DataWriter dataWriter;
+        // Are we currently advertising?
+        bool _advertising = false;
+
+        #endregion //Variables
+
+        #region ProximityFinder functions
 
         /// <summary>
         /// Invoked when this page is about to be displayed in a Frame.
@@ -224,8 +273,21 @@ namespace ProximityDemo
 
         }
 
-        // Handle external connection requests.
-        PeerInformation requestingPeer;
+        /// <summary>
+        /// Handler for when the connection state changes
+        /// </summary>
+        private void TriggeredConnectionStateChanged(object sender, TriggeredConnectionStateChangedEventArgs e)
+        {
+            if (e.State == TriggeredConnectState.PeerFound)
+            {
+                WriteMessageText("Peer found. You may now pull your devices out of proximity.");
+            }
+            if (e.State == TriggeredConnectState.Completed)
+            {
+                WriteMessageText("Connected. You may now send a message.");
+                EnableMessaging(e.Socket);
+            }
+        }
 
         /// <summary>
         /// When another device requests a connection, tell us!
@@ -237,9 +299,28 @@ namespace ProximityDemo
                 "Click 'Accept Connection' to connect.");
         }
 
-        Windows.Networking.Sockets.StreamSocket proximitySocket;
-        Windows.Storage.Streams.DataWriter dataWriter;
-        bool _advertising = false; //Are we currently advertising?
+        /// <summary>
+        /// Connect to a peer
+        /// </summary>
+        /// <param name="peerInfo">Information about the peer requesting to connect.</param>
+        async private void ConnectToPeer(PeerInformation peerInfo)
+        {
+            WriteMessageText("Peer found. Connecting to " + peerInfo.DisplayName);
+            try
+            {
+                Windows.Networking.Sockets.StreamSocket socket =
+                    await PeerFinder.ConnectAsync(peerInfo);
+
+                WriteMessageText("Connection successful. You may now send messages.");
+                EnableMessaging(socket);
+            }
+            catch (Exception err)
+            {
+                WriteMessageText("Connection failed: " + err.Message);
+            }
+
+            requestingPeer = null;
+        }
 
         /// <summary>
         /// Define socket and data writer for sending and reading messages.
@@ -359,62 +440,9 @@ namespace ProximityDemo
             }
         }
 
-        /// <summary>
-        /// Handler for when the connection state changes
-        /// </summary>
-        private void TriggeredConnectionStateChanged(
-            object sender,
-            TriggeredConnectionStateChangedEventArgs e)
-        {
-            if (e.State == TriggeredConnectState.PeerFound)
-            {
-                WriteMessageText("Peer found. You may now pull your devices out of proximity.");
-            }
-            if (e.State == TriggeredConnectState.Completed)
-            {
-                WriteMessageText("Connected. You may now send a message.");
-                EnableMessaging(e.Socket);
-            }
-        }
-
-        /// <summary>
-        /// Connect to a peer
-        /// </summary>
-        /// <param name="peerInfo">Information about the peer requesting to connect.</param>
-        async private void ConnectToPeer(PeerInformation peerInfo)
-        {
-            WriteMessageText("Peer found. Connecting to " + peerInfo.DisplayName);
-            try
-            {
-                Windows.Networking.Sockets.StreamSocket socket =
-                    await PeerFinder.ConnectAsync(peerInfo);
-
-                WriteMessageText("Connection successful. You may now send messages.");
-                EnableMessaging(socket);
-            }
-            catch (Exception err)
-            {
-                WriteMessageText("Connection failed: " + err.Message);
-            }
-
-            requestingPeer = null;
-        }
+        #endregion //ProximityFinder functions
 
         #region ProximityFinder example buttons
-        /// <summary>
-        /// When the Send button is pressed, call SendMessageText.
-        /// </summary>
-        private void SendButtonPressed(object sender, RoutedEventArgs e)
-        {
-            if (proximitySocket != null)
-            {
-                SendMessageText();
-            }
-            else
-            {
-                WriteMessageText("You must enter proximity to send a message.");
-            }
-        }
 
         /// <summary>
         /// When the Advertise button is pressed, start to advertise for peers.
@@ -507,7 +535,24 @@ namespace ProximityDemo
             CloseSocket();
             WriteMessageText("Stopped PeerFinder and closed socket");
         }
+
+        /// <summary>
+        /// When the Send button is pressed, call SendMessageText.
+        /// </summary>
+        private void SendButtonPressed(object sender, RoutedEventArgs e)
+        {
+            if (proximitySocket != null)
+            {
+                SendMessageText();
+            }
+            else
+            {
+                WriteMessageText("You must enter proximity to send a message.");
+            }
+        }
+
         #endregion //ProximityFinder example buttons
+
         #endregion //ProximityFinder example
     }
 }
