@@ -103,9 +103,9 @@ namespace ProximityDemo
             last_pivot_index = (((Pivot)sender).SelectedIndex);
 
             #region PeerFinder socket example initialization/deconstructor
-            //If the current pivot is on PeerFinder, add handler.
-            if (last_pivot_index == 1)
+            if (last_pivot_index == 1) // Initialize PeerFinder.
             {
+                // If supported, add handler
                 if ((PeerFinder.SupportedDiscoveryTypes & PeerDiscoveryTypes.Triggered) == PeerDiscoveryTypes.Triggered)
                 {
                     PeerFinder.TriggeredConnectionStateChanged += TriggeredConnectionStateChanged;
@@ -284,7 +284,7 @@ namespace ProximityDemo
             }
             if (e.State == TriggeredConnectState.Completed)
             {
-                WriteMessageText("Connected. You may now send a message.");
+                WriteMessageText("You are now connected and may exchange messages!");
                 EnableMessaging(e.Socket);
             }
         }
