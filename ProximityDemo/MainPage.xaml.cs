@@ -133,7 +133,7 @@ namespace ProximityDemo
 
             if (_proximityDevice != null)
             {
-                if (_subscribedMessageID == -1) //Stop Subscribing
+                if (_subscribedMessageID != -1) //Stop Subscribing
                 {
                     _proximityDevice.StopSubscribingForMessage(_subscribedMessageID);
                     _subscribedMessageID = -1;
@@ -198,7 +198,7 @@ namespace ProximityDemo
         /// </summary>
         private void StopSubscribingButtonPressed(object sender, RoutedEventArgs e)
         {
-            if (_subscribedMessageID == -1)
+            if (_subscribedMessageID != -1)
             {
                 _proximityDevice.StopSubscribingForMessage(_subscribedMessageID);
                 _subscribedMessageID = -1;
