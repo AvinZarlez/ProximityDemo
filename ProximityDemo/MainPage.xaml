@@ -15,7 +15,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Pivot Title="Proximity API Demos" Grid.Row="0" SelectionChanged="PivotChanged">
-            <PivotItem Header="PeerDevice">
+            <PivotItem Header="Proximity Device">
                 <StackPanel Orientation="Vertical">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <TextBox x:Name="TapMessageTextBox" Text="Hello World!" Width="256"/>
