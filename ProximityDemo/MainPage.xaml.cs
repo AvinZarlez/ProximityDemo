@@ -187,7 +187,7 @@ namespace ProximityDemo
         /// <param name="message">The message that was received.</param>
         private void messageReceived(ProximityDevice device, ProximityMessage message)
         {
-            WriteMessageText("Message receieved: " + message.DataAsString);
+            WriteMessageText("Message received: " + message.DataAsString);
         }
 
         #endregion //ProximityDevice functions
