@@ -28,7 +28,7 @@ namespace ProximityDemo
         #region General variables
 
         // Last pivot index
-        private int last_pivot_index = 0;
+        private int current_pivot_index = 0;
         // Dispatcher for messages we display to the screen
         private Windows.UI.Core.CoreDispatcher messageDispatcher = Window.Current.CoreWindow.Dispatcher;
 
@@ -81,7 +81,7 @@ namespace ProximityDemo
         /// </summary>
         private void PivotChanged(object sender, SelectionChangedEventArgs e)
         {
-            switch (last_pivot_index)
+            switch (current_pivot_index)
             {
                 case 0: //Leaving Proximity Device demo
                     StopSubscribingButtonPressed(null, null);
@@ -102,10 +102,10 @@ namespace ProximityDemo
                     break;
             }
 
-            last_pivot_index = (((Pivot)sender).SelectedIndex);
+            current_pivot_index = (((Pivot)sender).SelectedIndex);
 
             #region PeerFinder socket example initialization/deconstructor
-            if (last_pivot_index == 1) // Initialize PeerFinder.
+            if (current_pivot_index == 1) // Initialize PeerFinder.
             {
                 // If supported, add handler
                 if ((PeerFinder.SupportedDiscoveryTypes & PeerDiscoveryTypes.Triggered) == PeerDiscoveryTypes.Triggered)
