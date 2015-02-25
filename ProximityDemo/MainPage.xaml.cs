@@ -28,7 +28,7 @@ namespace ProximityDemo
         #region General variables
 
         // Last pivot index
-        private int last_pivot_index = -1;
+        private int last_pivot_index = 0;
         // Dispatcher for messages we display to the screen
         private Windows.UI.Core.CoreDispatcher messageDispatcher = Window.Current.CoreWindow.Dispatcher;
 
