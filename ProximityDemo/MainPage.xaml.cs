@@ -87,7 +87,7 @@ namespace ProximityDemo
                     StopSubscribingButtonPressed(null, null);
                     StopPublishingButtonPressed(null,null);
                     break;
-                case 1: //Leaving Proximity Device demo
+                case 1: //Leaving Proximity Finder demo
                     // Detach the callback handler (there can only be one PeerConnectProgress handler).
                     PeerFinder.TriggeredConnectionStateChanged -= TriggeredConnectionStateChanged;
                     // Detach the incoming connection request event handler.
